@@ -76,7 +76,6 @@ export async function generatePrompt(
     // Generate prompts based on language preference
     if (language === "en") {
       const result = await generateText({
-        maxTokens: config.maxTokens ?? 1000,
         messages: [
           {
             content: SYSTEM_PROMPT,
@@ -108,7 +107,6 @@ export async function generatePrompt(
 
     if (language === "zh") {
       const result = await generateText({
-        maxTokens: config.maxTokens ?? 1000,
         messages: [
           {
             content: SYSTEM_PROMPT,
@@ -141,7 +139,6 @@ export async function generatePrompt(
     // Generate both languages
     const [enResult, zhResult] = await Promise.all([
       generateText({
-        maxTokens: config.maxTokens ?? 1000,
         messages: [
           {
             content: SYSTEM_PROMPT,
@@ -165,7 +162,6 @@ export async function generatePrompt(
         temperature: config.temperature ?? 0.7,
       }),
       generateText({
-        maxTokens: config.maxTokens ?? 1000,
         messages: [
           {
             content: SYSTEM_PROMPT,
@@ -208,7 +204,6 @@ export async function testAPIConnection(config: APIConfig): Promise<boolean> {
     const model = createLLMClient(config);
 
     await generateText({
-      maxTokens: 10,
       model,
       prompt: 'Hello, respond with "OK" if you can read this.',
     });

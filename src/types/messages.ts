@@ -30,6 +30,11 @@ export interface ActivateScreenshotMessage extends BaseMessage {
   type: "ACTIVATE_SCREENSHOT";
 }
 
+// Capture screenshot message
+export interface CaptureScreenshotMessage extends BaseMessage {
+  type: "CAPTURE_SCREENSHOT";
+}
+
 // Image capture message
 export interface ImageMetadata {
   alt?: string;
@@ -107,6 +112,7 @@ export interface ErrorMessage extends BaseMessage {
 export type ExtensionMessage =
   | ActivateSelectionMessage
   | ActivateScreenshotMessage
+  | CaptureScreenshotMessage
   | ImageCapturedMessage
   | FetchImageMessage
   | GeneratePromptMessage

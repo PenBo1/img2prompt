@@ -38,14 +38,14 @@ export default defineContentScript({
     /**
      * Create floating button UI with shadow DOM
      */
-    function createUI() {
+    async function createUI() {
       // Create container
       uiContainer = document.createElement("div");
       uiContainer.id = "img2prompt-ui";
       document.body.appendChild(uiContainer);
 
       // Create shadow DOM UI
-      const ui = createShadowRootUi(ctx, {
+      const ui = await createShadowRootUi(ctx, {
         anchor: uiContainer,
         name: "img2prompt",
         onMount: (container) => {
@@ -55,7 +55,7 @@ export default defineContentScript({
         position: "inline",
       });
 
-      ui.mount();
+      await ui.mount();
     }
 
     /**
@@ -303,7 +303,7 @@ export default defineContentScript({
     function hasBackgroundImage(element: HTMLElement): boolean {
       const style = window.getComputedStyle(element);
       const bgImage = style.backgroundImage;
-      return bgImage && bgImage !== "none";
+      return !!(bgImage && bgImage !== "none");
     }
 
     /**
@@ -360,6 +360,10 @@ export default defineContentScript({
 
       if (match) {
         const url = match[1];
+
+        if (!url) {
+          throw new Error("Failed to extract background image URL");
+        }
 
         if (url.startsWith("data:")) {
           return url;

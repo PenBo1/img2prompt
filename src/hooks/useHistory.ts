@@ -66,7 +66,10 @@ export function useHistory() {
 
   // Watch for changes
   const watchHistory = (
-    callback: (newValue: HistoryEntry[], oldValue: HistoryEntry[]) => void
+    callback: (
+      newValue: HistoryEntry[] | null,
+      oldValue: HistoryEntry[] | null
+    ) => void
   ) => storage.watch<HistoryEntry[]>(`local:${STORAGE_KEYS.HISTORY}`, callback);
 
   return {

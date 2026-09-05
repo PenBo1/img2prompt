@@ -2,9 +2,10 @@
  * Background script - handles keyboard shortcuts, message passing, and LLM API calls
  */
 
-import { storage } from "#imports";
+import { browser, storage } from "#imports";
 import { generatePrompt } from "~/lib/llm";
 import type {
+  ExtensionConfig,
   ExtensionMessage,
   FetchImageResponse,
   ImageCapturedPayload,
@@ -74,7 +75,7 @@ export default defineBackground({
  */
 async function handleMessage(
   message: ExtensionMessage,
-  sender: browser.runtime.MessageSender
+  sender: { tab?: { id?: number; windowId?: number } }
 ): Promise<unknown> {
   switch (message.type) {
     case "FETCH_IMAGE":
@@ -145,7 +146,9 @@ async function handleGeneratePrompt(
   language?: "en" | "zh" | "both"
 ): Promise<PromptGeneratedPayload> {
   // Get config
-  const config = await storage.getItem(`local:${STORAGE_KEYS.CONFIG}`);
+  const config = await storage.getItem<ExtensionConfig>(
+    `local:${STORAGE_KEYS.CONFIG}`
+  );
   const apiConfig = config?.apiConfig ?? DEFAULT_CONFIG.apiConfig;
 
   // Check API key
@@ -181,9 +184,9 @@ async function handleGeneratePrompt(
 /**
  * Capture visible tab screenshot
  */
-async function handleCaptureScreenshot(
-  sender: browser.runtime.MessageSender
-): Promise<{ screenshot: string }> {
+async function handleCaptureScreenshot(sender: {
+  tab?: { id?: number; windowId?: number };
+}): Promise<{ screenshot: string }> {
   try {
     const tabId = sender.tab?.id;
 
@@ -191,10 +194,16 @@ async function handleCaptureScreenshot(
       throw new Error("No tab ID available");
     }
 
+    // Get the window ID from the tab
+    const windowId = sender.tab?.windowId;
+
     // Capture visible tab
-    const dataUrl = await browser.tabs.captureVisibleTab(null, {
-      format: "png",
-    });
+    const dataUrl = await browser.tabs.captureVisibleTab(
+      windowId ?? browser.windows.WINDOW_ID_CURRENT,
+      {
+        format: "png",
+      }
+    );
 
     return { screenshot: dataUrl };
   } catch (error) {

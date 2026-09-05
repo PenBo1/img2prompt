@@ -68,7 +68,10 @@ export function useConfig() {
 
   // Watch for changes
   const watchConfig = (
-    callback: (newValue: ExtensionConfig, oldValue: ExtensionConfig) => void
+    callback: (
+      newValue: ExtensionConfig | null,
+      oldValue: ExtensionConfig | null
+    ) => void
   ) => storage.watch<ExtensionConfig>(`local:${STORAGE_KEYS.CONFIG}`, callback);
 
   return {
