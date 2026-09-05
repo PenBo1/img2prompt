@@ -1,0 +1,94 @@
+{
+  "extension_name": {
+    "message": "图片转提示词",
+    "description": "Extension name"
+  },
+  "extension_description": {
+    "message": "将图片转换为AI生图提示词，支持中英双语输出",
+    "description": "Extension description"
+  },
+  "capture_image": {
+    "message": "选择图片",
+    "description": "Button text for capturing image"
+  },
+  "take_screenshot": {
+    "message": "截图",
+    "description": "Button text for taking screenshot"
+  },
+  "upload_image": {
+    "message": "上传图片",
+    "description": "Button text for uploading image"
+  },
+  "generating_prompt": {
+    "message": "正在生成提示词...",
+    "description": "Loading message when generating prompt"
+  },
+  "copy_english": {
+    "message": "复制英文",
+    "description": "Button text to copy English prompt"
+  },
+  "copy_chinese": {
+    "message": "复制中文",
+    "description": "Button text to copy Chinese prompt"
+  },
+  "copy_both": {
+    "message": "复制双语",
+    "description": "Button text to copy both prompts"
+  },
+  "settings": {
+    "message": "设置",
+    "description": "Settings menu item"
+  },
+  "api_key": {
+    "message": "API密钥",
+    "description": "API key input label"
+  },
+  "api_provider": {
+    "message": "API提供商",
+    "description": "API provider select label"
+  },
+  "save": {
+    "message": "保存",
+    "description": "Save button text"
+  },
+  "cancel": {
+    "message": "取消",
+    "description": "Cancel button text"
+  },
+  "error_no_api_key": {
+    "message": "请在设置中配置您的API密钥",
+    "description": "Error message when API key is not configured"
+  },
+  "error_image_capture": {
+    "message": "图片捕获失败",
+    "description": "Error message when image capture fails"
+  },
+  "error_api_call": {
+    "message": "API调用失败",
+    "description": "Error message when API call fails"
+  },
+  "success_copied": {
+    "message": "已复制到剪贴板",
+    "description": "Success message when copied"
+  },
+  "language": {
+    "message": "语言",
+    "description": "Language selection label"
+  },
+  "english": {
+    "message": "英语",
+    "description": "English language option"
+  },
+  "chinese": {
+    "message": "中文",
+    "description": "Chinese language option"
+  },
+  "japanese": {
+    "message": "日语",
+    "description": "Japanese language option"
+  },
+  "korean": {
+    "message": "韩语",
+    "description": "Korean language option"
+  }
+}

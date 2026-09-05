@@ -1,0 +1,94 @@
+{
+  "extension_name": {
+    "message": "Image to Prompt",
+    "description": "Extension name"
+  },
+  "extension_description": {
+    "message": "Convert images to AI image generation prompts with dual language support",
+    "description": "Extension description"
+  },
+  "capture_image": {
+    "message": "Capture Image",
+    "description": "Button text for capturing image"
+  },
+  "take_screenshot": {
+    "message": "Take Screenshot",
+    "description": "Button text for taking screenshot"
+  },
+  "upload_image": {
+    "message": "Upload Image",
+    "description": "Button text for uploading image"
+  },
+  "generating_prompt": {
+    "message": "Generating prompt...",
+    "description": "Loading message when generating prompt"
+  },
+  "copy_english": {
+    "message": "Copy English",
+    "description": "Button text to copy English prompt"
+  },
+  "copy_chinese": {
+    "message": "Copy Chinese",
+    "description": "Button text to copy Chinese prompt"
+  },
+  "copy_both": {
+    "message": "Copy Both",
+    "description": "Button text to copy both prompts"
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings menu item"
+  },
+  "api_key": {
+    "message": "API Key",
+    "description": "API key input label"
+  },
+  "api_provider": {
+    "message": "API Provider",
+    "description": "API provider select label"
+  },
+  "save": {
+    "message": "Save",
+    "description": "Save button text"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Cancel button text"
+  },
+  "error_no_api_key": {
+    "message": "Please configure your API key in settings",
+    "description": "Error message when API key is not configured"
+  },
+  "error_image_capture": {
+    "message": "Failed to capture image",
+    "description": "Error message when image capture fails"
+  },
+  "error_api_call": {
+    "message": "API call failed",
+    "description": "Error message when API call fails"
+  },
+  "success_copied": {
+    "message": "Copied to clipboard",
+    "description": "Success message when copied"
+  },
+  "language": {
+    "message": "Language",
+    "description": "Language selection label"
+  },
+  "english": {
+    "message": "English",
+    "description": "English language option"
+  },
+  "chinese": {
+    "message": "Chinese",
+    "description": "Chinese language option"
+  },
+  "japanese": {
+    "message": "Japanese",
+    "description": "Japanese language option"
+  },
+  "korean": {
+    "message": "Korean",
+    "description": "Korean language option"
+  }
+}
