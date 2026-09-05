@@ -23,6 +23,9 @@ export default defineConfig({
       },
     },
 
+    // Default locale for i18n
+    default_locale: "en",
+
     // Keyboard shortcuts
     commands: {
       "capture-image": {
