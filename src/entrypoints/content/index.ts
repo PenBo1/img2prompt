@@ -47,7 +47,7 @@ export default defineContentScript({
       // Create shadow DOM UI
       const ui = await createShadowRootUi(ctx, {
         anchor: uiContainer,
-        name: "img2prompt",
+        name: "img2prompt-panel",
         onMount: (container) => {
           // Mount React app here
           mountReactApp(container);
@@ -64,7 +64,12 @@ export default defineContentScript({
     function mountReactApp(container: Element) {
       // Create floating button
       const button = document.createElement("button");
-      button.innerHTML = "📷";
+      button.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+          <circle cx="12" cy="13" r="3"/>
+        </svg>
+      `;
       button.style.cssText = `
         position: fixed;
         bottom: 24px;
@@ -75,7 +80,9 @@ export default defineContentScript({
         background: #0070f3;
         color: white;
         border: none;
-        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
         z-index: 2147483647;
@@ -117,21 +124,33 @@ export default defineContentScript({
       `;
 
       // Image selection button
-      const selectBtn = createMenuButton("🖼️", "Select image", () => {
-        startImageSelection();
-        menu.remove();
-      });
+      const selectBtn = createMenuButton(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+        "Select image",
+        () => {
+          startImageSelection();
+          menu.remove();
+        }
+      );
 
       // Screenshot button
-      const screenshotBtn = createMenuButton("📸", "Take screenshot", () => {
-        startScreenshotCapture();
-        menu.remove();
-      });
+      const screenshotBtn = createMenuButton(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+        "Take screenshot",
+        () => {
+          startScreenshotCapture();
+          menu.remove();
+        }
+      );
 
       // Close button
-      const closeBtn = createMenuButton("✖️", "Close", () => {
-        menu.remove();
-      });
+      const closeBtn = createMenuButton(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+        "Close",
+        () => {
+          menu.remove();
+        }
+      );
 
       menu.appendChild(selectBtn);
       menu.appendChild(screenshotBtn);
@@ -338,13 +357,12 @@ export default defineContentScript({
      * Extract image data from element
      */
     async function extractImage(element: HTMLElement): Promise<string> {
+      // Direct img element
       if (element instanceof HTMLImageElement) {
-        // For img elements
         if (element.src.startsWith("data:")) {
           return element.src;
         }
 
-        // Fetch remote image via background
         const response = await browser.runtime.sendMessage({
           type: "FETCH_IMAGE",
           url: element.src,
@@ -353,7 +371,7 @@ export default defineContentScript({
         return response.imageData;
       }
 
-      // For background images
+      // Background image
       const style = window.getComputedStyle(element);
       const bgImage = style.backgroundImage;
       const match = bgImage.match(/url\(['"]?(.+?)['"]?\)/);
@@ -369,13 +387,56 @@ export default defineContentScript({
           return url;
         }
 
-        // Fetch via background
         const response = await browser.runtime.sendMessage({
           type: "FETCH_IMAGE",
           url,
         });
 
         return response.imageData;
+      }
+
+      // Check for img children
+      const imgChild = element.querySelector("img");
+      if (imgChild) {
+        if (imgChild.src.startsWith("data:")) {
+          return imgChild.src;
+        }
+
+        const response = await browser.runtime.sendMessage({
+          type: "FETCH_IMAGE",
+          url: imgChild.src,
+        });
+
+        return response.imageData;
+      }
+
+      // Check for background images in children
+      const children = element.querySelectorAll("*");
+      for (const child of children) {
+        if (child instanceof HTMLElement) {
+          const childStyle = window.getComputedStyle(child);
+          const childBgImage = childStyle.backgroundImage;
+          const childMatch = childBgImage.match(/url\(['"]?(.+?)['"]?\)/);
+
+          if (childMatch) {
+            const url = childMatch[1];
+
+            if (!url) {
+              continue;
+            }
+
+            if (url.startsWith("data:")) {
+              return url;
+            }
+
+            const response = await browser.runtime.sendMessage({
+              type: "FETCH_IMAGE",
+              url,
+            });
+
+            return response.imageData;
+          }
+        }
       }
 
       throw new Error("No image found in element");
@@ -408,17 +469,11 @@ export default defineContentScript({
     async function startScreenshotCapture() {
       try {
         // Request screenshot from background
-        const [_tab] = await browser.tabs.query({
-          active: true,
-          currentWindow: true,
-        });
-
-        // Capture visible tab (needs to be done in background)
         const response = await browser.runtime.sendMessage({
           type: "CAPTURE_SCREENSHOT",
         });
 
-        if (response.screenshot) {
+        if (response?.screenshot) {
           // Show screenshot UI for cropping
           showScreenshotUI(response.screenshot);
         }

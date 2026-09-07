@@ -1,50 +1,68 @@
-import { useCallback, useState } from "react";
-import reactLogo from "@/assets/react.svg";
-import wxtLogo from "/wxt.svg";
-import React from "react";
+import { ExternalLink, Image, Keyboard, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 function App() {
-  const [count, setCount] = useState(0);
-
-  const incrementCount = useCallback(() => {
-    setCount((prevCount) => prevCount + 1);
-  }, []);
+  const handleOpenOptions = () => {
+    browser.runtime.openOptionsPage();
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://wxt.dev" rel="noopener" target="_blank">
-          <img
-            alt="WXT logo"
-            className="logo"
-            height="6em"
-            src={wxtLogo}
-            width="6em"
-          />
-        </a>
-        <a href="https://react.dev" rel="noopener" target="_blank">
-          <img
-            alt="React logo"
-            className="logo react"
-            height="6em"
-            src={reactLogo}
-            width="6em"
-          />
-        </a>
-      </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={incrementCount} type="button">
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
-      </p>
-    </>
+    <div className="w-80 p-4">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Image className="size-5 text-primary" />
+            img2prompt
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="flex flex-col gap-4">
+          <p className="text-sm text-muted-foreground">
+            Convert images to AI prompts with dual language support (EN & ZH)
+          </p>
+
+          <Separator />
+
+          {/* Keyboard Shortcuts */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Keyboard className="size-4" />
+              Shortcuts
+            </div>
+            <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Select image</span>
+                <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono">Ctrl+Shift+I</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Take screenshot</span>
+                <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono">Ctrl+Shift+S</kbd>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2">
+            <Button className="w-full justify-start" onClick={handleOpenOptions} variant="outline">
+              <Settings className="size-4" />
+              Settings
+            </Button>
+            <Button
+              className="w-full justify-start"
+              onClick={() => browser.tabs.create({ url: "https://github.com/PenBo1/img2prompt" })}
+              variant="ghost"
+            >
+              <ExternalLink className="size-4" />
+              GitHub Repository
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
