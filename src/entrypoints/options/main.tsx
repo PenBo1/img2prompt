@@ -1,5 +1,6 @@
 import "./style.css"
 import * as React from "react"
+import { createRoot } from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createHashRouter, RouterProvider } from "react-router"
 import { Toaster } from "@/components/ui/sonner"
@@ -18,7 +19,7 @@ const queryClient = new QueryClient({
 
 async function initApp() {
   const root = document.getElementById("root")!
-  root.className = "antialiased bg-background"
+  root.className = "antialiased bg-background text-foreground"
 
   const router = createHashRouter([
     {
