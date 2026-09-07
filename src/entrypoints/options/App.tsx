@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,8 +19,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -34,6 +39,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -45,6 +51,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import { useConfig } from "~/hooks";
 import { testAPIConnection } from "~/lib/llm";
 import type { APIConfig, LLMProvider, UserPreferences } from "~/types";
@@ -90,6 +100,7 @@ export default function App() {
       setPreferences(config.preferences);
     } catch (error) {
       console.error("Failed to load config:", error);
+      toast.error("Failed to load settings");
     } finally {
       setIsLoading(false);
     }
@@ -100,10 +111,10 @@ export default function App() {
     try {
       await updateAPIConfig(apiConfig);
       await updatePreferences(preferences);
-      alert("Settings saved successfully!");
+      toast.success("Settings saved successfully!");
     } catch (error) {
       console.error("Failed to save config:", error);
-      alert("Failed to save settings. Please try again.");
+      toast.error("Failed to save settings. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -111,7 +122,7 @@ export default function App() {
 
   async function handleTest() {
     if (!apiConfig.apiKey) {
-      alert("Please enter an API key first.");
+      toast.error("Please enter an API key first.");
       return;
     }
 
@@ -119,10 +130,17 @@ export default function App() {
     setTestResult(null);
     try {
       const success = await testAPIConnection(apiConfig);
-      setTestResult(success ? "success" : "error");
+      if (success) {
+        setTestResult("success");
+        toast.success("Connection successful! API key is valid.");
+      } else {
+        setTestResult("error");
+        toast.error("Connection failed. Please check your API key.");
+      }
     } catch (error) {
       console.error("API test failed:", error);
       setTestResult("error");
+      toast.error("Connection failed. Please try again.");
     } finally {
       setIsTesting(false);
     }
@@ -173,7 +191,7 @@ export default function App() {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar variant="inset">
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -207,6 +225,17 @@ export default function App() {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+
+        <SidebarFooter className="p-4">
+          <Button
+            className="w-full"
+            disabled={isSaving}
+            onClick={handleSave}
+          >
+            {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Save Settings
+          </Button>
+        </SidebarFooter>
       </Sidebar>
 
       <SidebarInset>
@@ -219,7 +248,7 @@ export default function App() {
         </header>
 
         <ScrollArea className="flex-1">
-          <div className="p-6">
+          <div className="mx-auto max-w-4xl p-6">
             {activeSection === "api" && (
               <div className="flex flex-col gap-6">
                 <Card>
@@ -229,110 +258,114 @@ export default function App() {
                       Choose your LLM provider and configure API settings
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="provider">Provider</Label>
-                      <Select
-                        onValueChange={(value) =>
-                          handleProviderChange(value as LLMProvider)
-                        }
-                        value={apiConfig.provider}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="openai">OpenAI</SelectItem>
-                            <SelectItem value="anthropic">Anthropic</SelectItem>
-                            <SelectItem value="gemini">Google Gemini</SelectItem>
-                            <SelectItem value="custom">Custom Endpoint</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="api-key">API Key</Label>
-                      <Input
-                        id="api-key"
-                        onChange={(e) =>
-                          setAPIConfig({ ...apiConfig, apiKey: e.target.value })
-                        }
-                        placeholder="Enter your API key"
-                        type="password"
-                        value={apiConfig.apiKey}
-                      />
-                    </div>
-
-                    {apiConfig.provider === "custom" && (
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="endpoint">API Endpoint</Label>
-                        <Input
-                          id="endpoint"
-                          onChange={(e) =>
-                            setAPIConfig({
-                              ...apiConfig,
-                              endpoint: e.target.value,
-                            })
+                  <CardContent>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel htmlFor="provider">Provider</FieldLabel>
+                        <Select
+                          onValueChange={(value) =>
+                            handleProviderChange(value as LLMProvider)
                           }
-                          placeholder="https://api.example.com/v1"
-                          type="url"
-                          value={apiConfig.endpoint || ""}
+                          value={apiConfig.provider}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="openai">OpenAI</SelectItem>
+                              <SelectItem value="anthropic">Anthropic</SelectItem>
+                              <SelectItem value="gemini">Google Gemini</SelectItem>
+                              <SelectItem value="custom">Custom Endpoint</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FieldDescription>
+                          Select the AI provider for generating prompts
+                        </FieldDescription>
+                      </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="api-key">API Key</FieldLabel>
+                        <Input
+                          id="api-key"
+                          onChange={(e) =>
+                            setAPIConfig({ ...apiConfig, apiKey: e.target.value })
+                          }
+                          placeholder="Enter your API key"
+                          type="password"
+                          value={apiConfig.apiKey}
                         />
-                      </div>
-                    )}
+                        <FieldDescription>
+                          Your API key is stored locally and never sent to our servers
+                        </FieldDescription>
+                      </Field>
 
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="model">Model</Label>
-                      <Input
-                        id="model"
-                        onChange={(e) =>
-                          setAPIConfig({ ...apiConfig, model: e.target.value })
-                        }
-                        placeholder={PROVIDER_DEFAULTS[apiConfig.provider].model}
-                        type="text"
-                        value={apiConfig.model}
-                      />
-                    </div>
+                      {apiConfig.provider === "custom" && (
+                        <Field>
+                          <FieldLabel htmlFor="endpoint">API Endpoint</FieldLabel>
+                          <Input
+                            id="endpoint"
+                            onChange={(e) =>
+                              setAPIConfig({
+                                ...apiConfig,
+                                endpoint: e.target.value,
+                              })
+                            }
+                            placeholder="https://api.example.com/v1"
+                            type="url"
+                            value={apiConfig.endpoint || ""}
+                          />
+                          <FieldDescription>
+                            Custom API endpoint URL
+                          </FieldDescription>
+                        </Field>
+                      )}
 
-                    <div className="flex items-center gap-4">
-                      <Button
-                        disabled={isTesting || !apiConfig.apiKey}
-                        onClick={handleTest}
-                        variant="outline"
-                      >
-                        {isTesting && (
-                          <Loader2 className="mr-2 size-4 animate-spin" />
+                      <Field>
+                        <FieldLabel htmlFor="model">Model</FieldLabel>
+                        <Input
+                          id="model"
+                          onChange={(e) =>
+                            setAPIConfig({ ...apiConfig, model: e.target.value })
+                          }
+                          placeholder={PROVIDER_DEFAULTS[apiConfig.provider].model}
+                          type="text"
+                          value={apiConfig.model}
+                        />
+                        <FieldDescription>
+                          Model to use for prompt generation
+                        </FieldDescription>
+                      </Field>
+
+                      <div className="flex items-center gap-4 pt-2">
+                        <Button
+                          disabled={isTesting || !apiConfig.apiKey}
+                          onClick={handleTest}
+                          variant="outline"
+                        >
+                          {isTesting && (
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                          )}
+                          Test Connection
+                        </Button>
+
+                        {testResult === "success" && (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <Check className="size-4" />
+                            <span>API key is valid</span>
+                          </div>
                         )}
-                        Test Connection
-                      </Button>
 
-                      {testResult === "success" && (
-                        <Alert className="flex-1">
-                          <Check className="size-4" />
-                          <AlertDescription>
-                            Connection successful! API key is valid.
-                          </AlertDescription>
-                        </Alert>
-                      )}
-
-                      {testResult === "error" && (
-                        <Alert className="flex-1" variant="destructive">
-                          <AlertDescription>
-                            Connection failed. Please check your API key and try
-                            again.
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                    </div>
+                        {testResult === "error" && (
+                          <span className="text-sm text-destructive">
+                            Connection failed
+                          </span>
+                        )}
+                      </div>
+                    </FieldGroup>
                   </CardContent>
                 </Card>
-
-                <Button disabled={isSaving} onClick={handleSave}>
-                  {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
-                  Save Settings
-                </Button>
               </div>
             )}
 
@@ -345,63 +378,70 @@ export default function App() {
                       Customize language and UI settings
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="output-language">Prompt Output Language</Label>
-                      <Select
-                        onValueChange={(value) =>
-                          setPreferences({
-                            ...preferences,
-                            outputLanguage: value as "en" | "zh" | "both",
-                          })
-                        }
-                        value={preferences.outputLanguage}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="both">English + Chinese</SelectItem>
-                            <SelectItem value="en">English Only</SelectItem>
-                            <SelectItem value="zh">中文</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <CardContent>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel>Prompt Output Language</FieldLabel>
+                        <ToggleGroup
+                          type="single"
+                          value={preferences.outputLanguage}
+                          onValueChange={(value) =>
+                            value && setPreferences({
+                              ...preferences,
+                              outputLanguage: value as "en" | "zh" | "both",
+                            })
+                          }
+                        >
+                          <ToggleGroupItem value="both">
+                            English + Chinese
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="en">
+                            English Only
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="zh">
+                            中文
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                        <FieldDescription>
+                          Choose the output language for generated prompts
+                        </FieldDescription>
+                      </Field>
 
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="button-position">Floating Button Position</Label>
-                      <Select
-                        onValueChange={(value) =>
-                          setPreferences({
-                            ...preferences,
-                            floatingButtonPosition:
-                              value as UserPreferences["floatingButtonPosition"],
-                          })
-                        }
-                        value={preferences.floatingButtonPosition}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="bottom-right">Bottom Right</SelectItem>
-                            <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                            <SelectItem value="top-right">Top Right</SelectItem>
-                            <SelectItem value="top-left">Top Left</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      <Separator />
+
+                      <Field>
+                        <FieldLabel htmlFor="button-position">
+                          Floating Button Position
+                        </FieldLabel>
+                        <Select
+                          onValueChange={(value) =>
+                            setPreferences({
+                              ...preferences,
+                              floatingButtonPosition:
+                                value as UserPreferences["floatingButtonPosition"],
+                            })
+                          }
+                          value={preferences.floatingButtonPosition}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                              <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                              <SelectItem value="top-right">Top Right</SelectItem>
+                              <SelectItem value="top-left">Top Left</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FieldDescription>
+                          Position of the floating button on web pages
+                        </FieldDescription>
+                      </Field>
+                    </FieldGroup>
                   </CardContent>
                 </Card>
-
-                <Button disabled={isSaving} onClick={handleSave}>
-                  {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
-                  Save Settings
-                </Button>
               </div>
             )}
 
@@ -414,20 +454,25 @@ export default function App() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between rounded-lg border p-3">
-                      <span className="text-sm">Select image from page</span>
-                      <kbd className="rounded bg-muted px-2 py-1 font-mono text-sm">
-                        Ctrl+Shift+I
-                      </kbd>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg border p-3">
-                      <span className="text-sm">Take screenshot</span>
-                      <kbd className="rounded bg-muted px-2 py-1 font-mono text-sm">
-                        Ctrl+Shift+S
-                      </kbd>
-                    </div>
-                  </div>
+                  <FieldGroup>
+                    <Field orientation="horizontal">
+                      <div className="flex flex-1 items-center justify-between rounded-lg border p-4">
+                        <span className="text-sm font-medium">Select image from page</span>
+                        <kbd className="rounded bg-muted px-3 py-1.5 font-mono text-sm">
+                          Ctrl+Shift+I
+                        </kbd>
+                      </div>
+                    </Field>
+
+                    <Field orientation="horizontal">
+                      <div className="flex flex-1 items-center justify-between rounded-lg border p-4">
+                        <span className="text-sm font-medium">Take screenshot</span>
+                        <kbd className="rounded bg-muted px-3 py-1.5 font-mono text-sm">
+                          Ctrl+Shift+S
+                        </kbd>
+                      </div>
+                    </Field>
+                  </FieldGroup>
                 </CardContent>
               </Card>
             )}
@@ -440,56 +485,58 @@ export default function App() {
                     Browser extension for converting images to AI prompts
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1">
-                    <p className="font-medium text-sm">Version</p>
-                    <p className="text-muted-foreground text-sm">0.0.0</p>
-                  </div>
+                <CardContent>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel className="text-muted-foreground">Version</FieldLabel>
+                      <p className="text-sm font-medium">0.0.0</p>
+                    </Field>
 
-                  <Separator />
+                    <Separator />
 
-                  <div className="flex flex-col gap-1">
-                    <p className="font-medium text-sm">Description</p>
-                    <p className="text-muted-foreground text-sm">
-                      Convert images to AI image generation prompts with dual
-                      language support (EN & ZH). Supports multiple capture methods,
-                      custom LLM providers, and keyboard shortcuts.
-                    </p>
-                  </div>
+                    <Field>
+                      <FieldLabel className="text-muted-foreground">Description</FieldLabel>
+                      <p className="text-sm leading-relaxed">
+                        Convert images to AI image generation prompts with dual
+                        language support (EN & ZH). Supports multiple capture methods,
+                        custom LLM providers, and keyboard shortcuts.
+                      </p>
+                    </Field>
 
-                  <Separator />
+                    <Separator />
 
-                  <div className="flex flex-col gap-2">
-                    <p className="font-medium text-sm">Features</p>
-                    <ul className="list-inside list-disc text-muted-foreground text-sm">
-                      <li>Dual language output (English & Chinese)</li>
-                      <li>Multiple capture methods (selection, screenshot)</li>
-                      <li>Custom LLM integration (OpenAI, Anthropic, Gemini)</li>
-                      <li>Keyboard shortcuts for quick access</li>
-                      <li>Embedded floating button in web pages</li>
-                    </ul>
-                  </div>
+                    <Field>
+                      <FieldLabel className="text-muted-foreground">Features</FieldLabel>
+                      <ul className="list-inside list-disc text-sm space-y-1">
+                        <li>Dual language output (English & Chinese)</li>
+                        <li>Multiple capture methods (selection, screenshot)</li>
+                        <li>Custom LLM integration (OpenAI, Anthropic, Gemini)</li>
+                        <li>Keyboard shortcuts for quick access</li>
+                        <li>Embedded floating button in web pages</li>
+                      </ul>
+                    </Field>
 
-                  <Separator />
+                    <Separator />
 
-                  <div className="flex flex-col gap-1">
-                    <p className="font-medium text-sm">Author</p>
-                    <p className="text-muted-foreground text-sm">penbo</p>
-                  </div>
+                    <Field>
+                      <FieldLabel className="text-muted-foreground">Author</FieldLabel>
+                      <p className="text-sm">penbo</p>
+                    </Field>
 
-                  <Separator />
+                    <Separator />
 
-                  <Button
-                    onClick={() =>
-                      browser.tabs.create({
-                        url: "https://github.com/PenBo1/img2prompt",
-                      })
-                    }
-                    variant="outline"
-                  >
-                    <Globe className="mr-2 size-4" />
-                    View on GitHub
-                  </Button>
+                    <Button
+                      onClick={() =>
+                        browser.tabs.create({
+                          url: "https://github.com/PenBo1/img2prompt",
+                        })
+                      }
+                      variant="outline"
+                    >
+                      <Globe className="mr-2 size-4" />
+                      View on GitHub
+                    </Button>
+                  </FieldGroup>
                 </CardContent>
               </Card>
             )}
