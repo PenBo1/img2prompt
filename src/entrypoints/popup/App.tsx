@@ -1,69 +1,67 @@
-import { ExternalLink, Image, Keyboard, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Globe, Keyboard, Settings } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 
 function App() {
   const handleOpenOptions = () => {
-    browser.runtime.openOptionsPage();
-  };
+    browser.runtime.openOptionsPage()
+  }
 
   return (
-    <div className="w-80 p-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Image className="size-5 text-primary" />
-            img2prompt
-          </CardTitle>
-        </CardHeader>
+    <>
+      <div className="flex flex-col gap-4 bg-background px-6 pt-5 pb-4">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Globe className="size-5 text-primary" />
+            <span className="font-semibold text-lg">img2prompt</span>
+          </div>
+        </div>
 
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">
-            Convert images to AI prompts with dual language support (EN & ZH)
-          </p>
+        {/* Description */}
+        <p className="text-sm text-muted-foreground">
+          Convert images to AI prompts with dual language support (EN & ZH)
+        </p>
 
-          <Separator />
+        <Separator />
 
-          {/* Keyboard Shortcuts */}
+        {/* Keyboard shortcuts */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <Keyboard className="size-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Keyboard Shortcuts</span>
+          </div>
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Keyboard className="size-4" />
-              Shortcuts
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Select image</span>
+              <kbd className="rounded bg-muted px-2 py-1 font-mono text-xs">
+                Ctrl+Shift+I
+              </kbd>
             </div>
-            <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-              <div className="flex justify-between">
-                <span>Select image</span>
-                <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono">Ctrl+Shift+I</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>Take screenshot</span>
-                <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono">Ctrl+Shift+S</kbd>
-              </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Take screenshot</span>
+              <kbd className="rounded bg-muted px-2 py-1 font-mono text-xs">
+                Ctrl+Shift+S
+              </kbd>
             </div>
           </div>
+        </div>
+      </div>
 
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex flex-col gap-2">
-            <Button className="w-full justify-start" onClick={handleOpenOptions} variant="outline">
-              <Settings className="size-4" />
-              Settings
-            </Button>
-            <Button
-              className="w-full justify-start"
-              onClick={() => browser.tabs.create({ url: "https://github.com/PenBo1/img2prompt" })}
-              variant="ghost"
-            >
-              <ExternalLink className="size-4" />
-              GitHub Repository
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+      {/* Footer */}
+      <div className="flex items-center justify-between bg-neutral-200 px-2 py-1 dark:bg-neutral-800">
+        <button
+          type="button"
+          className="flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+          onClick={handleOpenOptions}
+        >
+          <Settings className="size-4" strokeWidth={1.6} />
+          <span className="text-[13px] font-medium">Settings</span>
+        </button>
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">v0.0.0</span>
+      </div>
+    </>
+  )
 }
 
-export default App;
+export default App
